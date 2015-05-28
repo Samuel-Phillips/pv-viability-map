@@ -17,13 +17,14 @@ with open('clientside.html') as f:
 @app.route("/rooftops/<wkt>")
 def getrts(wkt=None):
     results = app.config['DATABASE'].get_rts(wkt)
-    return json.dumps([
+    prejson = [
              {
                'geo': api.wkt2geojson(rr.wktshape),
                'light': rr.sunlight,
                'id': rr.id
              } for rr in results
-           ])
+           ]
+    return json.dumps(prejson)
 
 @app.route("/")
 def index():

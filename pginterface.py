@@ -28,7 +28,7 @@ class Rooftops:
             c.execute("""
             SELECT ST_AsText(shape), sunlight, id
             FROM rooftops
-            WHERE ST_Overlaps(shape, %s::geometry)
+            WHERE ST_Intersects(shape, %s::geometry)
             """, (wktobj,))
             return (RRect(*r) for r in c.fetchall())
 
