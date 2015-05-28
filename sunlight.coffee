@@ -15,18 +15,25 @@ class Viewport
         y = (@top - coord[1]) * @canvas.height / @height
         return [x, y]
 
+    moveTo: (coord) ->
+        [x, y] = @transform coord
+        @ctx.moveTo x, y
+
+    lineTo: (coord) ->
+        [x, y] = @transform coord
+        @ctx.lineTo x, y
+
 draw_geo_poly = (poly, viewport) ->
     for coordlist in poly.coordinates
         prev = undefined
         for coord in coordlist
-            alert coord
             if prev == undefined
                 prev = true
                 viewport.ctx.beginPath()
                 viewport.ctx.strokeStyle = 'green'
-                viewport.ctx.moveTo.apply(this, viewport.transform coord)
+                viewport.moveTo coord
             else
-                viewport.ctx.lineTo.apply(this, viewport.transform coord)
+                viewport.lineTo coord
         viewport.ctx.stroke()
 
 redraw_canvas = (viewport) ->
@@ -40,5 +47,5 @@ redraw_canvas = (viewport) ->
 
 window.onload = ->
     canvas = document.getElementById('canvas')
-    viewport = new Viewport(canvas, -5, 5, 5, -5)
+    viewport = new Viewport(canvas, -4, 4, 2, -2)
     redraw_canvas(viewport)
