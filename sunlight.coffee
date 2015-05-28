@@ -3,6 +3,7 @@ class Viewport
         @width = @right - @left
         @height = @top - @bottom
         @ctx = @canvas.getContext '2d'
+        @scale = [@width / canvas.width, @height / canvas.height]
         @wkt = "POLYGON((
             #{@left} #{@bottom},
             #{@right} #{@bottom},
@@ -22,6 +23,12 @@ class Viewport
     lineTo: (coord) ->
         [x, y] = @transform coord
         @ctx.lineTo x, y
+
+Viewport.from_pixel_scale = (canvas, scale) ->
+    [xs, ys] = scale
+    width = xs * canvas.width
+    height = ys * canvas.height
+    return new Viewport(-width/2, width/2, height/2, -height/2)
 
 draw_geo_poly = (poly, viewport) ->
     for coordlist in poly.coordinates
