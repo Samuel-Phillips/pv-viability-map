@@ -1,35 +1,3 @@
-class Viewport
-    constructor: (@canvas, @left, @right, @top, @bottom) ->
-        @width = @right - @left
-        @height = @top - @bottom
-        @ctx = @canvas.getContext '2d'
-        @scale = [@width / canvas.width, @height / canvas.height]
-        @wkt = "POLYGON((
-            #{@left} #{@bottom},
-            #{@right} #{@bottom},
-            #{@right} #{@top},
-            #{@left} #{@top},
-            #{@left} #{@bottom}))"
-
-    transform: (coord) ->
-        x = (coord[0] - @left) * @canvas.width / @width
-        y = (@top - coord[1]) * @canvas.height / @height
-        return [x, y]
-
-    moveTo: (coord) ->
-        [x, y] = @transform coord
-        @ctx.moveTo x, y
-
-    lineTo: (coord) ->
-        [x, y] = @transform coord
-        @ctx.lineTo x, y
-
-Viewport.from_pixel_scale = (canvas, scale) ->
-    [xs, ys] = scale
-    width = xs * canvas.width
-    height = ys * canvas.height
-    return new Viewport(-width/2, width/2, height/2, -height/2)
-
 draw_geo_poly = (poly, viewport) ->
     for coordlist in poly.coordinates
         prev = undefined
@@ -53,6 +21,11 @@ redraw_canvas = (viewport) ->
     req.send()
 
 window.onload = ->
-    canvas = document.getElementById('canvas')
-    viewport = new Viewport(canvas, -4, 4, 2, -2)
-    redraw_canvas(viewport)
+    map = L.map('map').setView [51.505, -0.09], 13
+    L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg',
+        attribution: """Portions Courtesy NASA/JPL-Caltech and U.S. Depart.
+            of Agriculture, Farm Service Agency. Tiles Courtesy of
+            <a href="http://www.mapquest.com/" target="_blank">MapQuest</a>
+            <img src="http://developer.mapquest.com/content/osm/mq_logo.png">"""
+        maxZoom: 18
+    ).addTo map
