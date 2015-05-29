@@ -19,8 +19,11 @@ get_shapes = (shape_region, cb) ->
 
 # converts a url to OSM format coordinate
 url2osm = (url) ->
-    return for x in 1..3
-        url.replace /\/(\d+)\/(\d+)\/(\d+).jpg$/, "$#{x}"
+    c = []
+    for x in [1, 2, 3]
+        c.push Integer.parseInt url.replace(
+            /\/(\d+)\/(\d+)\/(\d+).jpg$/, "$#{x}")
+    return c
 
 # converts an OSM format tile coordinate to a WKT polygon
 osm2wkt = (osm) ->

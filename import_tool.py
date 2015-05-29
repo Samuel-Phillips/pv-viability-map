@@ -48,11 +48,14 @@ def import_shape_file(saveable, db):
 
 def perform_import(sf, db):
     """Takes a pyshp instance and imports its point to the database."""
+    kwhs_col = [f[0] for f in sf.fields].index('kwhs') - 1
+    if kwhs_col < 0:
+        kwhs_col = 0
     try:
         db.add_rects(
                 pginterface.Rect(
                     wktshape=points2wkt(row.shape.points),
-                    sunlight=13.37
+                    sunlight=row.record[kwhs_col]
                 ) for row in sf.shapeRecords()
         )
     except:
