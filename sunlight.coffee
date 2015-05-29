@@ -1,27 +1,18 @@
-draw_geo_poly = (poly, viewport) ->
-    for coordlist in poly.coordinates
-        prev = undefined
-        for coord in coordlist
-            if prev == undefined
-                prev = true
-                viewport.ctx.beginPath()
-                viewport.ctx.strokeStyle = 'green'
-                viewport.moveTo coord
-            else
-                viewport.lineTo coord
-        viewport.ctx.stroke()
+put_poly = (map, poly) ->
+    for coordlist in poly.geo.coordinates
+        L.polygon(coordlist).addTo(map).bindPopup(
+            "<b>Sunlight:</b> #{poly.light}")
 
-redraw_canvas = (viewport) ->
+get_shapes = (shape_region, cb) ->
     req = new XMLHttpRequest()
     req.onload = ->
         shapes = JSON.parse(this.responseText)
-        for shape in shapes
-            draw_geo_poly(shape.geo, viewport)
+        cb shapes
     req.open "get", "/rooftops/#{encodeURIComponent(viewport.wkt)}"
     req.send()
 
 window.onload = ->
-    map = L.map('map').setView [51.505, -0.09], 13
+    map = L.map('map').setView [39.085463, -77.6442], 10
     L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg',
         attribution: """Portions Courtesy NASA/JPL-Caltech and U.S. Depart.
             of Agriculture, Farm Service Agency. Tiles Courtesy of
