@@ -10,6 +10,7 @@ DBUSER = 'samtheman'
 DATABASE = pginterface.Rooftops(psycopg2.connect(database='test', user=DBUSER))
 app.config.from_object(__name__)
 
+# Read files into memory so they may be served quickly
 with open('sunlight.js') as f:
     sjs_text = f.read()
 with open('clientside.html') as f:
@@ -19,10 +20,14 @@ with open('import.html') as f:
 
 @app.route("/")
 def index():
+    """Routing rule for the root page"""
     return root_text
 
 @app.route("/rooftops/<wkt>")
 def getrts(wkt=None):
+    """Routing rule for the API. When the url /rooftops/<wkt> is requested,
+    <wkt> is interpreted as a Well Known Text object, and all rooftops that
+    intersect it are returned in a JSON list."""
     results = app.config['DATABASE'].get_rts(wkt)
     prejson = [
              {
@@ -35,6 +40,7 @@ def getrts(wkt=None):
 
 @app.route("/import", methods=["GET", "POST"])
 def import_shapefile():
+    """Routing rule for this "Import Shapefile" page."""
     db = app.config["DATABASE"]
     if flask.request.method == 'POST':
         if flask.request.form['secret'] != 'password':

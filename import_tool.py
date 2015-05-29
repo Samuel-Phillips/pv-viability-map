@@ -8,6 +8,8 @@ import shapefile
 
 @contextmanager
 def tempdir():
+    """Contect manager for a temporary directory. Directory is deleted
+    when the context manager exits."""
     the_dir = tempfile.mkdtemp()
     try:
         yield the_dir
@@ -15,6 +17,9 @@ def tempdir():
         shutil.rmtree(the_dir)
 
 def import_shape_file(saveable, db):
+    """Imports a zipped shapefile (form the saveable parameter, which must
+    have a .save method) into the pginterface.Rooftops object db. Raises
+    import_tool.error with messages relating to the error encountered."""
     with tempdir() as root:
         zip_name = os.path.join(root, "map.zip")
         sf_dir = os.path.join(root, "shapes")
@@ -37,6 +42,7 @@ def import_shape_file(saveable, db):
                         ', '.join(sf_names)))
 
 def perform_import(sf, db):
+    """Takes a pyshp instance and imports its point to the database."""
     try:
         db.add_rects(
                 Rect(
@@ -49,6 +55,7 @@ def perform_import(sf, db):
         raise error("Database error, see log")
 
 def points2wkt(points):
+    """Converts a list of points into a WKT polygon."""
     return "POLYGON(({}))".format(
             ','.join(
                 ' '.join(point) for point in points
