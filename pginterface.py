@@ -1,4 +1,5 @@
 import contextlib
+import threading
 import collections
 
 class Rooftops:
@@ -6,6 +7,7 @@ class Rooftops:
     a PostGIS database."""
     def __init__(self, database_connection):
         self.db = database_connection
+        self.insert_lock = threading.Lock()
     
     def cursor(self):
         """Returns a context manager for a DB cursor."""
@@ -38,6 +40,14 @@ class Rooftops:
         """Deletes all rooftops. Dangerous!"""
         with self.cursor() as c:
             c.execute("DELETE FROM rooftops")
+
+    def commit(self):
+        """Commits pending changes"""
+        self.db.commit()
+
+    def rollback(self):
+        """Rollbacks changes"""
+        self.db.rollback()
 
 Rect = collections.namedtuple('Rect',   ['wktshape', 'sunlight'])
 RRect = collections.namedtuple('RRect', ['wktshape', 'sunlight', 'id'])

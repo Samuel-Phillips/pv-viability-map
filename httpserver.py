@@ -47,13 +47,16 @@ def import_shapefile():
             return "Incorrect passcode"
         myfile = flask.request.files['file']
         if myfile:
-            if 'cleardata' in flask.request.form:
-                db.clear()
-            try:
-                import_tool.import_shape_file(myfile, db)
-                return "ok"
-            except import_tool.error as e:
-                return e.args[0]
+            with db.insert_lock:
+                if 'cleardata' in flask.request.form:
+                    db.clear()
+                try:
+                    import_tool.import_shape_file(myfile, db)
+                    db.commit()
+                    return "ok"
+                except import_tool.error as e:
+                    db.rollback()
+                    return e.args[0]
         else:
             return "No file submitted"
     else:

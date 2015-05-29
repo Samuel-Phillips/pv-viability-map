@@ -1,10 +1,12 @@
 import tempfile
+import traceback
 import shutil
 import os.path
 import os
 from zipfile import ZipFile
 from contextlib import contextmanager
 import shapefile
+import pginterface
 
 @contextmanager
 def tempdir():
@@ -35,8 +37,11 @@ def import_shape_file(saveable, db):
         if len(sf_names) == 0:
             raise error("No shapefile found in zip. The zip must contain exactly one shapefile, and it must not be in a subdirectory.")
         elif len(sf_names) == 1:
-            sf = shapefile.Reader(os.path.join(sf_dir, sf_names.pop()))
-            perform_import(sf, db)
+            try:
+                sf = shapefile.Reader(os.path.join(sf_dir, sf_names.pop()))
+                perform_import(sf, db)
+            except shapefile.ShapefileException:
+                raise error("Invalid shapefile")
         else:
             raise error("Found multiple shapefiles with names {}. Only one shapefile may be present in the zip.".format(
                         ', '.join(sf_names)))
@@ -45,10 +50,10 @@ def perform_import(sf, db):
     """Takes a pyshp instance and imports its point to the database."""
     try:
         db.add_rects(
-                Rect(
+                pginterface.Rect(
                     wktshape=points2wkt(row.shape.points),
                     sunlight=13.37
-                ) for sr in sf.iterShapeRecords()
+                ) for row in sf.shapeRecords()
         )
     except:
         traceback.print_exc()
@@ -56,9 +61,10 @@ def perform_import(sf, db):
 
 def points2wkt(points):
     """Converts a list of points into a WKT polygon."""
+    points.append(points[0]) # work around for polygons not being connected
     return "POLYGON(({}))".format(
             ','.join(
-                ' '.join(point) for point in points
+                ' '.join(str(dim) for dim in point) for point in points
             ))
 
 class error(Exception):
