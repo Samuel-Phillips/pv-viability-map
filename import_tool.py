@@ -61,4 +61,7 @@ def points2wkt(points):
                 ' '.join(point) for point in points
             ))
 
-class error(Exception): pass
+class error(Exception):
+    """Generic error from the import process that contains a human readable
+    error string."""
+    pass

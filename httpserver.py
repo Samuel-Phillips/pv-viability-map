@@ -53,7 +53,7 @@ def import_shapefile():
                 import_tool.import_shape_file(myfile, db)
                 return "ok"
             except import_tool.error as e:
-                return e.message
+                return e.args[0]
         else:
             return "No file submitted"
     else:
