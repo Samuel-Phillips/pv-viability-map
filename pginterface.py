@@ -1,9 +1,6 @@
 import contextlib
 import collections
 
-Rect = collections.namedtuple('Rect',   ['wktshape', 'sunlight'])
-RRect = collections.namedtuple('RRect', ['wktshape', 'sunlight', 'id'])
-
 class Rooftops:
     """A database interface with methods that perform database operations on
     a PostGIS database."""
@@ -41,3 +38,6 @@ class Rooftops:
         """Deletes all rooftops. Dangerous!"""
         with self.cursor() as c:
             c.execute("DELETE FROM rooftops")
+
+Rect = collections.namedtuple('Rect',   ['wktshape', 'sunlight'])
+RRect = collections.namedtuple('RRect', ['wktshape', 'sunlight', 'id'])
