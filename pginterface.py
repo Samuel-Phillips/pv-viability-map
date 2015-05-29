@@ -41,3 +41,7 @@ class Rooftops:
 
     def add_rect(self, rect):
         self.add_rects((rect,))
+
+    def clear(self):
+        with self.cursor() as c:
+            c.execute("DELETE FROM rooftops")

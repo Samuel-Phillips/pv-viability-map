@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang=en>
+    <head>
+        <meta encoding=utf-8>
+        <title>Import Shapefile</title>
+    </head>
+    <body>
+        <h1>Import a Shapefile</h1>
+        <form action="" method=POST enctype=multipart/form-data>
+            <label for=secret>Enter the passcode:</label>
+            <input type=password name=secret id=secret></br>
+
+            <input type=checkbox name=cleardata id=cleardata checked>
+            <label for=cleardata>Clear old data</label></br>
+
+            <label for=file>Upload a .zip file containing data for exactly one
+                shapefile.</label>
+            <input type=file name=file id=file></br>
+
+            <input type=submit value=Import>
+        </form>
+    </body>
+</html>
