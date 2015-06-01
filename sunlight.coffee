@@ -5,7 +5,7 @@ put_poly = (map, poly) ->
 
         for coordlist in poly.geo.coordinates
             L.polygon(coordlist).addTo(map).bindPopup(
-                "<b>Sunlight:</b> #{poly.light}")
+                "<b>KWHs:</b> #{poly.light}")
 
 # Retrieves a list of rooftops from the /rooftops API and passes them to
 # the supplied callback.
@@ -14,33 +14,23 @@ get_shapes = (shape_region, cb) ->
     req.onload = ->
         shapes = JSON.parse(this.responseText)
         cb shapes
-    req.open "get", "/rooftops/#{encodeURIComponent(viewport.wkt)}"
+    req.open "get", "/rooftops/#{encodeURIComponent(shape_region)}", true
     req.send()
 
-# converts a url to OSM format coordinate
-url2osm = (url) ->
-    c = []
-    for x in [1, 2, 3]
-        c.push Integer.parseInt url.replace(
-            /\/(\d+)\/(\d+)\/(\d+).jpg$/, "$#{x}")
-    return c
-
-# converts an OSM format tile coordinate to a WKT polygon
-osm2wkt = (osm) ->
-    [z, x, y] = osm
-    [tsx, tsy] = tilesize(z)
-    left = x * tsx
-    right = left + tsx
-    top = y * tsy
-    bottom = top + tsy
+# creates a WKT polygon around the borders of the map
+get_wkt_region = (map) ->
+    bounds = map.getBounds()
+    left = bounds._southWest.lat
+    bottom = bounds._southWest.lng
+    right = bounds._northEast.lat
+    top = bounds._northEast.lng
     return "POLYGON((
-        #{left} #{bottom},
-        #{right} #{bottom},
-        #{right} #{top},
         #{left} #{top},
-        #{left} #{bottom}))"
-
-url2wkt = (url) -> osm2wkt url2osm url
+        #{right} #{top},
+        #{right} #{bottom},
+        #{left} #{bottom},
+        #{left} #{top}
+    ))"
 
 # set up the map, etc.
 window.onload = ->
@@ -54,3 +44,7 @@ window.onload = ->
         subdomains: '1234'
     ).addTo map
     map.rooftop_ids = []
+    map.on 'viewreset', (e) ->
+        get_shapes get_wkt_region(map), (shapes) ->
+            for shape in shapes
+                put_poly(map, shape)
