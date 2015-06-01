@@ -4,8 +4,28 @@ put_poly = (map, poly) ->
         map.rooftop_ids.push(poly.id)
 
         for coordlist in poly.geo.coordinates
-            L.polygon(coordlist).addTo(map).bindPopup(
-                "<b>KWHs:</b> #{poly.light}")
+            L.polygon(coordlist).addTo(map).bindPopup """
+            <table>
+                <tr>
+                    <th>Building Area:</th>
+                    <td>#{poly.building_area} m<sup>2</sup></td>
+                </tr><tr>
+                    <th>Useable Build Area:</th>
+                    <td>#{poly.useable_build_area} m<sup>2</sup></td>
+                </tr><tr>
+                    <th>Percent Useable:</th>
+                    <td>#{poly.percent_useable}%</td>
+                </tr><tr>
+                    <th>Expected Output:</th>
+                    <td>#{poly.kwhs} kWh</td>
+                </tr><tr>
+                    <th>System Size:</th>
+                    <td>#{poly.system_size_kw} kW</td>
+                </tr><tr>
+                    <th>Expected Savings:</th>
+                    <td>#{toString(poly.savings_str)}</td>
+                </tr>
+            </table>"""
 
 # Retrieves a list of rooftops from the /rooftops API and passes them to
 # the supplied callback.
@@ -48,3 +68,8 @@ window.onload = ->
         get_shapes get_wkt_region(map), (shapes) ->
             for shape in shapes
                 put_poly(map, shape)
+    # for debugging
+    window.map = map
+    window.setview = (lat, lng) ->
+        map.setView [lat, lng], 10
+    window.getframe = -> get_wkt_region map

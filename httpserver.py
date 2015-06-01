@@ -32,7 +32,14 @@ def getrts(wkt=None):
     prejson = [
              {
                'geo': api.wkt2geojson(rr.wktshape),
-               'light': rr.sunlight,
+               'building_area': rr.building_area,
+               'useable_build_area': rr.useable_build_area,
+               'percent_useable': rr.percent_usable,
+               'kwhs': rr.kwhs,
+               'system_size_kw': rr.system_size_kw,
+               'savings_ord': rr.savings,
+               'savings_str': '$' + str(rr.savings)[:-2] +
+                              '.' + str(rr.savings)[-2:],
                'id': rr.id
              } for rr in results
            ]
@@ -51,7 +58,8 @@ def import_shapefile():
                 if 'cleardata' in flask.request.form:
                     db.clear()
                 try:
-                    import_tool.import_shape_file(myfile, db)
+                    import_tool.import_shape_file(
+                            myfile, db, flask.request.form['proj'])
                     db.commit()
                     return "ok"
                 except import_tool.error as e:

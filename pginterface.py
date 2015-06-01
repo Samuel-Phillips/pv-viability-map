@@ -18,7 +18,7 @@ class Rooftops:
         returned as RRect objects."""
         with self.cursor() as c:
             c.execute("""
-            SELECT ST_AsText(shape), sunlight, id
+            SELECT ST_AsText(shape), building_area, useable_build_area, percent_usable, kwhs, system_size_kw, savings, id
             FROM rooftops
             WHERE ST_Intersects(shape, %s::geometry)
             """, (wktobj,))
@@ -28,8 +28,8 @@ class Rooftops:
         """Adds a list of Rect objects to the database."""
         with self.cursor() as c:
             c.executemany("""
-            INSERT INTO rooftops (shape, sunlight)
-            VALUES (%s, %s)
+            INSERT INTO rooftops (shape, building_area, useable_build_area, percent_usable, kwhs, system_size_kw, savings)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, rects)
 
     def add_rect(self, rect):
@@ -49,5 +49,5 @@ class Rooftops:
         """Rollbacks changes"""
         self.db.rollback()
 
-Rect = collections.namedtuple('Rect',   ['wktshape', 'sunlight'])
-RRect = collections.namedtuple('RRect', ['wktshape', 'sunlight', 'id'])
+Rect = collections.namedtuple('Rect',   'wktshape building_area useable_build_area percent_usable kwhs system_size_kw savings')
+RRect = collections.namedtuple('RRect', 'wktshape building_area useable_build_area percent_usable kwhs system_size_kw savings id')

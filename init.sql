@@ -2,6 +2,10 @@
 create table rooftops (
     id serial primary key,
     shape geometry not null,
-    sunlight real
+    building_area real,
+    useable_build_area real,
+    percent_usable real,
+    kwhs real,
+    system_size_kw real,
+    savings integer
 );
-
