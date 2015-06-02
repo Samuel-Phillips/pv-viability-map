@@ -8,6 +8,11 @@ from contextlib import contextmanager
 import shapefile
 import pginterface
 import pyproj
+from osgeo import osr
+
+leaflet_proj = pyproj.Proj(
+    '+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 '
+    '+b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 
 @contextmanager
 def tempdir():
@@ -19,12 +24,10 @@ def tempdir():
     finally:
         shutil.rmtree(the_dir)
 
-def import_shape_file(saveable, db, proj):
+def import_shape_file(saveable, db):
     """Imports a zipped shapefile (form the saveable parameter, which must
     have a .save method) into the pginterface.Rooftops object db. Raises
-    import_tool.error with messages relating to the error encountered.
-    proj is temporary parameter inputted from an HTML form until this whole
-    projections situation is sorted out."""
+    import_tool.error with messages relating to the error encountered."""
     with tempdir() as root:
         zip_name = os.path.join(root, "map.zip")
         sf_dir = os.path.join(root, "shapes")
@@ -42,12 +45,17 @@ def import_shape_file(saveable, db, proj):
         elif len(sf_names) == 1:
             name = sf_names.pop()
             joined = os.path.join(sf_dir, name)
-            for ext in 'shp dbf'.split(): # add prj here when #1 fixed
+            for ext in 'shp dbf prj'.split():
                 if not os.path.isfile(joined + '.' + ext):
                     return error('.' + ext + ' file missing from zip! Please include the entire shapefile.')
+            srs = osr.SpatialReference()
+            with open(joined + '.prj', mode='r', encoding='ascii') as f:
+                srs.ImportFromWkt(f.read())
+            p4str = srs.ExportToProj4()
+            sf_projection = pyproj.Proj(p4str)
             try:
                 sf = shapefile.Reader(joined)
-                perform_import(sf, proj, db)
+                perform_import(sf, sf_projection, db)
             except shapefile.ShapefileException:
                 raise error("Invalid shapefile")
         else:
@@ -76,16 +84,14 @@ def perform_import(sf, proj, db):
         traceback.print_exc()
         raise error("Database error, see log")
 
-def points2wkt(points, proj):
+def points2wkt(points, inproj):
     """Converts a list of points into a WKT polygon."""
     points.append(points[0]) # work around for polygons not being connected
-    outproj = pyproj.Proj('+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +b=6378137 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
-    inproj = pyproj.Proj(proj)
     
     return "POLYGON(({}))".format(
             ','.join(
                 ' '.join(str(test(dim, point)) for dim in pyproj.transform(
-                    inproj, outproj, *point)[:2]
+                    inproj, leaflet_proj, *point)[:2]
                 ) for point in points
             ))
 

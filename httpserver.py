@@ -58,8 +58,7 @@ def import_shapefile():
                 if 'cleardata' in flask.request.form:
                     db.clear()
                 try:
-                    import_tool.import_shape_file(
-                            myfile, db, flask.request.form['proj'])
+                    import_tool.import_shape_file(myfile, db)
                     db.commit()
                     return "ok"
                 except import_tool.error as e:
