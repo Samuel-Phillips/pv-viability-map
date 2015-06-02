@@ -2,7 +2,6 @@
 put_poly = (map, poly) ->
     unless poly.id in map.rooftop_ids
         map.rooftop_ids.push(poly.id)
-
         for coordlist in poly.geo.coordinates
             L.polygon(coordlist).addTo(map).bindPopup """
             <table>
@@ -54,7 +53,7 @@ get_wkt_region = (map) ->
 
 # set up the map, etc.
 window.onload = ->
-    map = L.map('map').setView [39.085463, -77.6442], 10
+    map = L.map('map').setView [38.562025782836706, -77.31149911880492], 15
     L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg',
         attribution: """Portions Courtesy NASA/JPL-Caltech and U.S. Depart.
             of Agriculture, Farm Service Agency. Tiles Courtesy of
@@ -63,6 +62,11 @@ window.onload = ->
         maxZoom: 18
         subdomains: '1234'
     ).addTo map
+#   L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpg',
+#       attribution: "TODO: ATTRIBUTION (MQ & OSM)"
+#       maxZoom: 18
+#       subdomains: '1234'
+#   ).addTo map
     map.rooftop_ids = []
     map.on 'viewreset', (e) ->
         get_shapes get_wkt_region(map), (shapes) ->
