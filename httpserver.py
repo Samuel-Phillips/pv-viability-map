@@ -7,9 +7,14 @@ import import_tool
 import password
 
 app = flask.Flask(__name__)
-DBUSER = 'samtheman'
-DATABASE = pginterface.Rooftops(psycopg2.connect(database='test', user=DBUSER))
-app.config.from_object(__name__)
+app.config.from_object('flaskconfig')
+app.config["DATABASE"] = pginterface.Rooftops(
+        psycopg2.connect(
+            database=app.config["DBNAME"],
+            user=app.config["DBUSER"],
+            password=app.config["DBPASS"]
+        ))
+
 
 # Read files into memory so they may be served quickly
 with open('sunlight.js') as f:
@@ -92,5 +97,8 @@ def import_shapefile():
         return iform_text
 
 if __name__=='__main__':
-    app.run(debug=True)
+    app.run(debug=app.config["DEBUG"],
+            host=app.config["HOST"],
+            port=app.config["PORT"]
+    )
 
