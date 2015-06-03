@@ -9,11 +9,11 @@ import password
 app = flask.Flask(__name__)
 app.config.from_object('flaskconfig')
 app.config["DATABASE"] = pginterface.Rooftops(
-        psycopg2.connect(
-            database=app.config["DBNAME"],
-            user=app.config["DBUSER"],
-            password=app.config["DBPASS"]
-        ))
+    psycopg2.connect(
+        database=app.config["DBNAME"],
+        user=app.config["DBUSER"],
+        password=app.config["DBPASS"]
+    ))
 
 
 # Read files into memory so they may be served quickly
@@ -26,10 +26,12 @@ with open('import.html') as f:
 with open('setpass.html') as f:
     setpass_text = f.read()
 
+
 @app.route("/")
 def index():
     """Routing rule for the root page"""
     return root_text
+
 
 @app.route("/rooftops/<wkt>")
 def getrts(wkt=None):
@@ -38,20 +40,21 @@ def getrts(wkt=None):
     intersect it are returned in a JSON list."""
     results = app.config['DATABASE'].get_rts(wkt)
     prejson = [
-             {
-               'geo': api.wkt2geojson(rr.wktshape),
-               'building_area': rr.building_area,
-               'useable_build_area': rr.useable_build_area,
-               'percent_useable': rr.percent_usable,
-               'kwhs': rr.kwhs,
-               'system_size_kw': rr.system_size_kw,
-               'savings_ord': rr.savings,
-               'savings_str': '$' + str(rr.savings)[:-2] +
-                              '.' + str(rr.savings)[-2:],
-               'id': rr.id
-             } for rr in results
-           ]
+        {
+            'geo': api.wkt2geojson(rr.wktshape),
+            'building_area': rr.building_area,
+            'useable_build_area': rr.useable_build_area,
+            'percent_useable': rr.percent_usable,
+            'kwhs': rr.kwhs,
+            'system_size_kw': rr.system_size_kw,
+            'savings_ord': rr.savings,
+            'savings_str': '$' + str(rr.savings)[:-2] +
+                           '.' + str(rr.savings)[-2:],
+            'id': rr.id
+        } for rr in results
+    ]
     return json.dumps(prejson)
+
 
 @app.route("/setpass", methods=["GET", "POST"])
 def setpass():
@@ -96,9 +99,8 @@ def import_shapefile():
     else:
         return iform_text
 
-if __name__=='__main__':
+if __name__ == '__main__':
     app.run(debug=app.config["DEBUG"],
             host=app.config["HOST"],
             port=app.config["PORT"]
-    )
-
+            )

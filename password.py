@@ -3,32 +3,39 @@ import unicodedata
 import sys
 import getpass
 
+
 def _hash(pwtext):
     """Perform the neccessary hashing on a normalized string."""
     return hashlib.sha512(_norm(pwtext)).digest()
+
 
 def _norm(pwtext):
     """Normalize a password so they can compare right"""
     return unicodedata.normalize('NFKC', pwtext).encode('utf-8')
 
+
 def check(pwtext):
     """Check if the given password string is, in fact, the correct one."""
     ps = _read()
-    return _hash(pwtext) == ps # potential race condition?
+    return _hash(pwtext) == ps  # potential race condition?
+
 
 def set(pwtext):
     """Set the password"""
     _write(_hash(pwtext))
+
 
 def _read():
     """Read the raw password hash from the file"""
     with open('password', mode='rb') as f:
         return f.read()
 
+
 def _write(hashed):
     """Write the raw password hash to the file"""
     with open('password', mode='wb') as f:
         f.write(hashed)
+
 
 def usage():
     print("Usage: python3 password.py ( set | check <password> )")

@@ -17,6 +17,7 @@ from osgeo import osr
 # EPSG 4326 (Not the actual CRS, but is used for interaction
 leaflet_proj = pyproj.Proj('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
 
+
 @contextmanager
 def tempdir():
     """Contect manager for a temporary directory. Directory is deleted
@@ -26,6 +27,7 @@ def tempdir():
         yield the_dir
     finally:
         shutil.rmtree(the_dir)
+
 
 def import_shape_file(saveable, db):
     """Imports a zipped shapefile (form the saveable parameter, which must
@@ -39,18 +41,22 @@ def import_shape_file(saveable, db):
         try:
             ZipFile(zip_name, mode='r').extractall(path=sf_dir)
         except:
-            raise error("Error while opening the uploaded file. Make sure it is in zip format.")
-        sf_names = set(name[:-4] for name in os.listdir(sf_dir)
-                if name.endswith('.shp') or name.endswith('.shx')
-                or name.endswith('.dbf'))
+            raise error("Error while opening the uploaded file. Make sure "
+                        "it is in zip format.")
+        sf_names = set(
+            name[:-4] for name in os.listdir(sf_dir) if name.endswith(
+                '.shp') or name.endswith('.shx') or name.endswith('.dbf'))
         if len(sf_names) == 0:
-            raise error("No shapefile found in zip. The zip must contain exactly one shapefile, and it must not be in a subdirectory.")
+            raise error("No shapefile found in zip. The zip must contain "
+                        "exactly one shapefile, and it must not be in a "
+                        "subdirectory.")
         elif len(sf_names) == 1:
             name = sf_names.pop()
             joined = os.path.join(sf_dir, name)
             for ext in 'shp dbf prj'.split():
                 if not os.path.isfile(joined + '.' + ext):
-                    return error('.' + ext + ' file missing from zip! Please include the entire shapefile.')
+                    return error('.' + ext + ' file missing from zip! Please '
+                                 'include the entire shapefile.')
             srs = osr.SpatialReference()
             with open(joined + '.prj', mode='r', encoding='ascii') as f:
                 srs.ImportFromWkt(f.read())
@@ -62,12 +68,15 @@ def import_shape_file(saveable, db):
             except shapefile.ShapefileException:
                 raise error("Invalid shapefile")
         else:
-            raise error("Found multiple shapefiles with names {}. Only one shapefile may be present in the zip.".format(
-                        ', '.join(sf_names)))
+            raise error("Found multiple shapefiles with names {}. Only one "
+                        "shapefile may be present in the zip.".format(
+                            ', '.join(sf_names)))
+
 
 def perform_import(sf, proj, db):
     """Takes a pyshp instance and imports its point to the database."""
-    cols = {n: None for n in 'kwhs BuidArea Perc System Savings UseRoof Zone'.split()}
+    cols = {n: None for n in
+            'kwhs BuidArea Perc System Savings UseRoof Zone'.split()}
     for i, f in enumerate(sf.fields):
         if f[0] in cols:
             cols[f[0]] = i - 1
@@ -87,19 +96,22 @@ def perform_import(sf, proj, db):
         traceback.print_exc()
         raise error("Database error, see log")
 
+
 def points2wkt(points, inproj):
     """Converts a list of points into a WKT polygon."""
-    points.append(points[0]) # work around for polygons not being connected
-    
+    points.append(points[0])  # work around for polygons not being connected
+
     return "POLYGON(({}))".format(
-            ','.join(
-                ' '.join(str(dim) for dim in pyproj.transform(
-                    inproj, leaflet_proj, *point)[:2]
-                ) for point in points
-            ))
+        ','.join(
+            ' '.join(str(dim) for dim in pyproj.transform(
+                inproj, leaflet_proj, *point)[:2]
+            ) for point in points
+        ))
+
 
 def is_useful(row):
     return True
+
 
 class error(Exception):
     """Generic error from the import process that contains a human readable
