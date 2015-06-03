@@ -4,6 +4,7 @@ import api
 import psycopg2
 import json
 import import_tool
+import password
 
 app = flask.Flask(__name__)
 DBUSER = 'samtheman'
@@ -17,6 +18,8 @@ with open('clientside.html') as f:
     root_text = f.read().replace('-*-magictext-*-', sjs_text)
 with open('import.html') as f:
     iform_text = f.read()
+with open('setpass.html') as f:
+    setpass_text = f.read()
 
 @app.route("/")
 def index():
@@ -45,12 +48,31 @@ def getrts(wkt=None):
            ]
     return json.dumps(prejson)
 
+@app.route("/setpass", methods=["GET", "POST"])
+def setpass():
+    """Routing rule to set the password"""
+    if flask.request.method == "POST":
+        form = flask.request.form
+        if not password.check(form['password']):
+            return ("Incorrect current password. If you can't remember it, "
+                    "try running this: <code>python3 password.py</code> in "
+                    "the application directory.")
+        else:
+            if form['npass1'] != form['npass2']:
+                return "Passwords don't match"
+            else:
+                password.set(form['npass1'])
+                return "ok"
+    else:
+        return setpass_text
+
+
 @app.route("/import", methods=["GET", "POST"])
 def import_shapefile():
     """Routing rule for this "Import Shapefile" page."""
     db = app.config["DATABASE"]
     if flask.request.method == 'POST':
-        if flask.request.form['secret'] != 'password':
+        if not password.check(flask.request.form['secret']):
             return "Incorrect passcode"
         myfile = flask.request.files['file']
         if myfile:
