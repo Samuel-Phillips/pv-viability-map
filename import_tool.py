@@ -93,18 +93,13 @@ def points2wkt(points, inproj):
     
     return "POLYGON(({}))".format(
             ','.join(
-                ' '.join(str(test(dim, point)) for dim in pyproj.transform(
+                ' '.join(str(dim) for dim in pyproj.transform(
                     inproj, leaflet_proj, *point)[:2]
                 ) for point in points
             ))
 
 def is_useful(row):
     return True
-
-def test(dim, point):
-    if str(dim) == 'inf':
-        print("Shit, let's be {}".format(repr(point)))
-    return dim
 
 class error(Exception):
     """Generic error from the import process that contains a human readable
