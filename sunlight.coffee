@@ -22,7 +22,7 @@ put_poly = (map, poly) ->
                     <td>#{poly.system_size_kw} kW</td>
                 </tr><tr>
                     <th>Expected Savings:</th>
-                    <td>#{toString(poly.savings_str)}</td>
+                    <td>#{poly.savings_str}</td>
                 </tr>
             </table>"""
 
