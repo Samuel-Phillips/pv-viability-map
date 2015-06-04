@@ -1,0 +1,8 @@
+Flask==0.10.1
+geojson==1.0.9
+itsdangerous==0.24
+Jinja2==2.7.3
+pyproj==1.9.4
+pyshp==1.2.1
+Shapely==1.5.9
+Werkzeug==0.10.4
