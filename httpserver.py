@@ -1,5 +1,5 @@
 import flask
-import pginterface
+import interface
 import api
 import psycopg2
 import json
@@ -8,7 +8,7 @@ import password
 
 app = flask.Flask(__name__)
 app.config.from_object('flaskconfig')
-app.config["DATABASE"] = pginterface.Rooftops(
+app.config["DATABASE"] = interface.Rooftops(
     psycopg2.connect(
         database=app.config["DBNAME"],
         user=app.config["DBUSER"],

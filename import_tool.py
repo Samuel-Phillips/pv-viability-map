@@ -6,7 +6,7 @@ import os
 from zipfile import ZipFile
 from contextlib import contextmanager
 import shapefile
-import pginterface
+import interface
 import pyproj
 from osgeo import osr
 
@@ -31,7 +31,7 @@ def tempdir():
 
 def import_shape_file(saveable, db):
     """Imports a zipped shapefile (form the saveable parameter, which must
-    have a .save method) into the pginterface.Rooftops object db. Raises
+    have a .save method) into the interface.Rooftops object db. Raises
     import_tool.error with messages relating to the error encountered."""
     with tempdir() as root:
         zip_name = os.path.join(root, "map.zip")
@@ -82,7 +82,7 @@ def perform_import(sf, proj, db):
             cols[f[0]] = i - 1
     try:
         db.add_rects(
-            pginterface.Rect(
+            interface.Rect(
                 wktshape=points2wkt(row.shape.points, proj),
                 building_area=row.record[cols['BuidArea']],
                 useable_build_area=row.record[cols['UseRoof']],
