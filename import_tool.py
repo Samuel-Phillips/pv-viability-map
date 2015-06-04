@@ -104,7 +104,7 @@ def points2wkt(points, inproj):
     return "POLYGON(({}))".format(
         ','.join(
             ' '.join(str(dim) for dim in pyproj.transform(
-                inproj, leaflet_proj, *point)[:2]
+                inproj, leaflet_proj, *reversed(point))[:2]
             ) for point in points
         ))
 
