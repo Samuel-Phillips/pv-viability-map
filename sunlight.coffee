@@ -53,6 +53,13 @@ get_wkt_region = (map) ->
 
 # set up the map, etc.
 window.onload = ->
+    mapdiv = document.getElementById('map')
+    fixsize = (event) ->
+        ms = mapdiv.style
+        [ms.width, ms.height] = [window.innerWidth, window.innerHeight]
+    fixsize()
+    addEventListener 'resize', fixsize
+
     map = L.map('map').setView [38.562025782836706, -77.31149911880492], 15
     L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg',
         attribution: """Portions Courtesy NASA/JPL-Caltech and U.S. Depart.
