@@ -1,6 +1,7 @@
-DBUSER = 'samtheman'
+DBUSER = 'sunlight'
 DBNAME = 'test'
-DBPASS = ''
+DBPASS = 'H3YCOOLK1D1STH1SYOU'
+DBHOST = 'localhost'
 DEBUG = True
 HOST = '0.0.0.0'
 if DEBUG:

@@ -12,7 +12,8 @@ app.config["DATABASE"] = interface.Rooftops(
     psycopg2.connect(
         database=app.config["DBNAME"],
         user=app.config["DBUSER"],
-        password=app.config["DBPASS"]
+        password=app.config["DBPASS"],
+        host=app.config["DBHOST"]
     ))
 
 

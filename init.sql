@@ -1,3 +1,5 @@
+/* The role that sunlight will log in as. */
+create role sunlight with password 'H3YCOOLK1D1STH1SYOU' login;
 /* The main table. Stores all the rooftops. */
 create table rooftops (
     id serial primary key,
@@ -9,3 +11,4 @@ create table rooftops (
     system_size_kw real,
     savings integer
 );
+grant all privileges on table rooftops to sunlight;
