@@ -1,6 +1,7 @@
 import contextlib
 import threading
 import collections
+import log
 
 
 class Rooftops:
@@ -42,6 +43,7 @@ class Rooftops:
 
     def clear(self):
         """Deletes all rooftops. Dangerous!"""
+        log.warn("Erasing database")
         with self.cursor() as c:
             c.execute("DELETE FROM rooftops")
 

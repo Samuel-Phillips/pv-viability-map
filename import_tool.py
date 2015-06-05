@@ -9,6 +9,7 @@ import shapefile
 import interface
 import pyproj
 from osgeo import osr
+import log
 
 ## Web Mercator (Not used for interaction)
 #leaflet_proj = pyproj.Proj(
@@ -33,6 +34,7 @@ def import_shape_file(saveable, db):
     """Imports a zipped shapefile (form the saveable parameter, which must
     have a .save method) into the interface.Rooftops object db. Raises
     import_tool.error with messages relating to the error encountered."""
+    log.note("Importing a shapefile")
     with tempdir() as root:
         zip_name = os.path.join(root, "map.zip")
         sf_dir = os.path.join(root, "shapes")
@@ -41,12 +43,14 @@ def import_shape_file(saveable, db):
         try:
             ZipFile(zip_name, mode='r').extractall(path=sf_dir)
         except:
+            log.err("Invalid zip uploaded!")
             raise error("Error while opening the uploaded file. Make sure "
                         "it is in zip format.")
         sf_names = set(
             name[:-4] for name in os.listdir(sf_dir) if name.endswith(
                 '.shp') or name.endswith('.shx') or name.endswith('.dbf'))
         if len(sf_names) == 0:
+            log.err("Zip with no shapefile uploaded")
             raise error("No shapefile found in zip. The zip must contain "
                         "exactly one shapefile, and it must not be in a "
                         "subdirectory.")
@@ -55,19 +59,24 @@ def import_shape_file(saveable, db):
             joined = os.path.join(sf_dir, name)
             for ext in 'shp dbf prj'.split():
                 if not os.path.isfile(joined + '.' + ext):
+                    log.err("Incomplete shapefile uploaded")
                     return error('.' + ext + ' file missing from zip! Please '
                                  'include the entire shapefile.')
             srs = osr.SpatialReference()
             with open(joined + '.prj', mode='r', encoding='ascii') as f:
-                srs.ImportFromWkt(f.read())
+                txf = f.read()
+                log.note(txf)
+                srs.ImportFromWkt(txf)
             p4str = srs.ExportToProj4()
             sf_projection = pyproj.Proj(p4str)
             try:
                 sf = shapefile.Reader(joined)
                 perform_import(sf, sf_projection, db)
             except shapefile.ShapefileException:
+                log.err("Invalid shapefile")
                 raise error("Invalid shapefile")
         else:
+            log.warn("Zip uploaded with multiple shapefiles")
             raise error("Found multiple shapefiles with names {}. Only one "
                         "shapefile may be present in the zip.".format(
                             ', '.join(sf_names)))
@@ -94,6 +103,7 @@ def perform_import(sf, proj, db):
         )
     except:
         traceback.print_exc()
+        log.err("Aw, shit.")
         raise error("Database error, see log")
 
 

@@ -5,6 +5,7 @@ import psycopg2
 import json
 import import_tool
 import password
+import log
 
 app = flask.Flask(__name__)
 app.config.from_object('flaskconfig')
@@ -63,6 +64,7 @@ def setpass():
     if flask.request.method == "POST":
         form = flask.request.form
         if not password.check(form['password']):
+            log.warn("Failed password check")
             return ("Incorrect current password. If you can't remember it, "
                     "try running this: <code>python3 password.py</code> in "
                     "the application directory.")
@@ -70,6 +72,7 @@ def setpass():
             if form['npass1'] != form['npass2']:
                 return "Passwords don't match"
             else:
+                log.note("Changing password")
                 password.set(form['npass1'])
                 return "ok"
     else:
@@ -101,6 +104,7 @@ def import_shapefile():
         return iform_text
 
 if __name__ == '__main__':
+    log.note("Starting server")
     app.run(debug=app.config["DEBUG"],
             host=app.config["HOST"],
             port=app.config["PORT"]
