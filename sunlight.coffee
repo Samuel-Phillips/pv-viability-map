@@ -23,6 +23,9 @@ put_poly = (map, poly) ->
                 </tr><tr>
                     <th>Expected Savings:</th>
                     <td>#{poly.savings_str}</td>
+                </tr><tr>
+                    <th>Rooftop ID:</th>
+                    <td>#{poly.id}</td>
                 </tr>
             </table>"""
 
@@ -50,6 +53,12 @@ get_wkt_region = (map) ->
         #{left} #{bottom},
         #{left} #{top}
     ))"
+
+window.debug = (type) ->
+    switch type
+        when 'clicky'
+            map.on 'click', (e) ->
+                alert "Lat, Lon: #{e.latlng.lat}, #{e.latlng.lng}"
 
 # set up the map, etc.
 window.onload = ->
