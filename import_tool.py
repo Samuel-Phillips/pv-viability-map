@@ -113,11 +113,15 @@ def points2wkt(points, inproj):
 
     return "POLYGON(({}))".format(
         ','.join(
-            ' '.join(str(dim) for dim in pyproj.transform(
+            ' '.join(str(dim) for dim in xfrm(pyproj.transform(
                 inproj, leaflet_proj, *reversed(point))[:2]
-            ) for point in points
+            )) for point in points
         ))
 
+def xfrm(point):
+    x = point[0]
+    y = point[1]
+    return x + 81.48064307833366, y - 79.60004366038598
 
 def is_useful(row):
     return True
