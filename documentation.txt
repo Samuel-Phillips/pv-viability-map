@@ -44,16 +44,16 @@ FAQ:
  | FLASK SERVER | Database |<------+   |  password.py  |  +--| In-memory    |
  |              | interface|       |   \_______________/  |  | HTML Text    |
  |              \__________/     add_rects  ^      ^      |  \______________|
- |                  ^              |       check   |      |   ______________|
- |                get_rts    ______|________|      |      |  /              |
- |        __________|_____  /                \      \     +->| The static   |
- |       /                \ | The Import     |      set      | part         |
- |       | The api part   | | Tool           |        \      |              |
+ | Converts         ^              |       check   |      |   ______________|
+ | WKT to         get_rts    ______|________|      |      |  /              |
+ | GeoJson__________|_____  /                \      \     +->| The static   |
+ |  |    /                \ | The Import     |      set      | part         |
+ |  +--> | The api part   | | Tool           |        \      |              |
  \_______|__ _____________|_|________________|_________\_____|______________/
-            |          ^               ^               ^           ^         
-           send       /requset         |               |           |         
-           data      / data            |               |           |         
-     _______v_______/_                 +----+          |         send        
+            |       ^                  ^               ^           ^         
+           send   request              |               |           |         
+           data   data                 |               |           |         
+     _______v_______|_                 +----+          |         send        
     /                 \                     |          |         HTML        
     | sunlight.coffee |                     |          |         page        
     \_______ _________/                     |          |           |         
@@ -65,17 +65,17 @@ FAQ:
     \___ ____________________/  /         form       form     |       
         ^      ^               /\         with         |      |              
   +-----+    loads            /  \        shapefile    |      |              
-  |  __________|_____________v_   v_________|____    __|______v__
-  | /                          \ /               \  /            \
-  | |   BROWSER (/)            | |   (/import)   |  | (/setpass) |
-  | \__________________________/ \_______________/  \____________/
+  |  __________|_____________v____v_________|__________|______v__
+  | /                           |                 |              \
+  | |   BROWSER (/)             |    (/import)    |   (/setpass) |
+  | \___________________________|_________________|______________/
   |                  ^                  ^                 ^      
- map             ¦ pans and            add              change    
- tiles---+       ¦  zooms            shapefile        password         
-   ______|_____  ¦  _|_______     ______|_________________|______
-  /            \ ¦ /         \   /                               \
-  |  MAPQUEST  | ¦ |   USER  |   |    GIS PEOPLE                 |
-  \____________/ ¦ \_________/   \_______________________________/
+ map             . pans and            add              change    
+ tiles---+       .  zooms            shapefile        password         
+   ______|_____  .  _|_______     ______|_________________|______
+  /            \ . /         \   /                               \
+  |  MAPQUEST  | . |   USER  |   |    GIS PEOPLE                 |
+  \____________/ . \_________/   \_______________________________/
 
     Q: What are all these things?
     A: 
@@ -165,11 +165,151 @@ I need a close paren. ")"
     Various static files must be served for sunlight to work. Rather than force
     myself to use the restrictive and arbitrary directory structure that
     Flask's static file thing would impose on the project, I have rolled my
-    own, highly clever system for serving these files. I suspect I may continue here.
+    own, highly clever system for serving these files. They are read into
+    memory using code like this:
+
+        with open('xyz.html', encoding='utf-8') as f:
+            xyz_text = f.read()
+    
+    They are then server by code like this:
+
+        @app.route('/xyz'):
+        def xyz():
+            ...
+            return xyz_text
+
+    There's also this crazy hack where, in clientside.html, -*-magictext-*- is
+    replaced by the contents of sunlight.js. This allows the two files to be
+    sent together.
+
 ~~ Database interface
+    Entirely contained in interface.py, this class has ALL the SQL. Everything
+    that touches the database goes through this class. Note that it will
+    sometimes refer to "rects," which one would think refers to rectangles.
+    They are actually WKT polygons. The database deals mostly with WKT, but
+    before being sent to the Javascript, it should be converted to GeoJson.
+
 ~~ password.py
+    The module that does everything password-related. There is no password
+    object; this is basically an interface to a global variable stored in a
+    file (see password). Has methods to check and set the password. May have
+    race condition issues when called simultaneously from multiple threads or
+    processes, but I decided that was incredibly unlikely and feel no need to
+    fix it.
+
+    Also has a command line interface for when it gets really bad (no one
+    can remember the password). Just run python3 password.py
+
 ~~ In-memory HTML Text
+    The HTML and JS files that were loaded into memory (see The static part). 
+    There are a couple of them:
+
+        clientside.html served as /
+        import.html     served as /import
+        setpass.html    served as /setpass
+
 ~~ FLASK SERVER
+    Flask is a simple HTTP server framework for Python. It was chosen over
+    other, potentially superior frameworks because I figured I didn't need so
+    much complicated stuff. Flask makes the server part real simple.
+
+    That said, I'm beginning to regret my decision. Flask is so hard to type.
+    Every time I type it, it comes out as falsk. Falsk Falsk Falsk.
+
 ~~ DATABASE
+    The postgres/postgis database used to store rooftops. The convenient
+    init.sql file can be used to initialize a new database. In addition to
+    creating a table "rooftops" for you, it will create a user "sunlight" for
+    the application to use. This way it can't mess anything up if the 1337
+    haxxorz get in.
+
+    The rooftops table has several columns. Here's a chart:
+
+    Name in   |                    |                    |                    |
+    Shapefile | DB Column          | interface.py name  | JSON API Name      | Name in UI
+    =============================================================================================
+              | id                 | id                 | id                 | Rooftop ID*
+              | shape              | wktshape           | geo                |  
+    BuidArea  | building_area      | building_area      | building_area      | Building Area
+    UseRoof   | useable_build_area | useable_build_area | useable_build_area | Useable Build Area
+    Perc      | percent_usable     | percent_usable     | percent_useable    | Percent Useable
+    kwhs      | kwhs               | kwhs               | kwhs               | Expected Output
+    System    | system_size_kw     | system_size_kw     | system_size_kw     | System Size
+    Savings   | savings            | savings            | savings_ord        |  
+              |                    |                    | savings_str        | Expected Savings
+
+     * Added for debugging
+
+    This chart of names exposes some rather nasty code; names changes slightly
+    with each layer they pass through. Not the difference of percent_usable and
+    percent_useable. Also note the ever-changing name of shape, and that the
+    server, not the client, is reponsible for formatting the money.
+
+    savings is a special beast becuase it is stored as a fixed-point number in
+    the database. (Savings = savings / 100)
+
+    Some changes to the UI names may be necessary.
+    
 ~~ password
+    The file where the SHA512 hash of the password is stored. It's just a
+    plain old file. password.py dosn't even keep a handle on it until it needs
+    to.
+
 ~~ HTML and JS files
+    clientside.html, import.html, setpass.html, sunlight.js
+    These files contains forms and divs and what not that needs to be sent to
+    the browser. clientside.html undergoes some processing before being stored
+    in root_text.
+
+       There, that should do it.
+
+    Q: I still don't get it. Can you explain what happens during various forms
+       of interaction?
+
+    A: Sure.
+
+THE SERVER IS STARTED
+    
+    Flask is pandered to. (httpserver.py:10)
+    The database connection is opened. (httpserver.py:12)
+    Files are read and transformed (httpserver.py:21)
+    Server starts (httpserver.py:108)
+
+THE USER DIRECTS THEIR BROWSER TO /
+    
+    Route / called. (httpserver.py:33)
+    root_text returned. (httpserver.py:35)
+    Leaflet loaded. (clientside.html:6)
+    Window resize event handler registered. (sunlight.coffee:70)
+    Leaflet started. (sunlight.coffee:72)
+    viewreset handler added to map. (sunlight.coffee:87)
+
+THE USER PANS OR ZOOM THE MAP
+
+    viewreset handler called. (sunlight.coffee:88)
+    XHR request for shapes that are now needed. (sunlight.coffee:39)
+    Route /rooftops called. (httpserver.py:39)
+    Rooftop polygons extracted from database. (httpserver.py:43)
+    WKT results converted to GeoJson. (httpserver.py:46)
+    Savings formatted to string. (httpserver.py:53)
+    Results dumped to JSON and sent to browser. (httpserver.py:58)
+    Returned shapes attatched to map. (sunlight.coffee:90)
+
+A GIS PERSON IMPORTS A SHAPEFILE
+
+    Browser sends form to server. (import.html)
+    Flask parses form data in to useful stuff. (somewhere in Flask)
+    Route POST /import called. (httpserver.py:83)
+    Password checked. (httpserver.py:87)
+    Data cleared if necessary. (httpserver.py:93)
+    File unzipped. (import_tool.py:44)
+    Projection calculated. (import_tool.py:71)
+    Projection applied. (import_tool.py:116)
+    Rooftops added to database. (import_tool.py:93)
+
+    Q: Ok, that's all great and helpful, but the thing is, no one asked any of
+       these questions. No one even had the opportunity to do so! How can they
+       be "Frequently Asked" if no one asked them!?
+
+    A: 
+        
