@@ -1,0 +1,175 @@
+                               
+                              |                 |
+                             /|   NEVER FEAR!   |\
+       _______I_I_I_________/ |                 | \_________I_I_I_______
+ D====/ ____________________  |  DOCUMENTATION  |  ____________________ \====G
+      ||   __| | | |___  || \ |                 | / ||  ___| | | |__   ||
+      \\__[_=|_[[|_|==_]_//  \|    IS  HERE!    |/  \\_[_==|_|]]_|=_]__//
+       \_________________/    |                 |    \_________________/
+              = = =                                         = = =
+
+FAQ:
+    Q: How do I start the server?
+    A: $ make run
+
+    Q: Where does the code start?
+    A: Technically, httpserver.py. Practically, the code starts at the
+       @app.route rules, which are called wherever the browser sends a request.
+       Outside of httpserver.py, and to a lesser degree import_tool.py, the
+       code is written to be independant of any framework, and could work even
+       as a command line tool. In fact, password.py does exactly that.
+
+    Q: I don't know Coffeescript.
+    A: Read coffeescript.org. It has an overview of all the language features.
+
+    Q: I don't know Flask.
+    A: You probably don't need to. None of the major issues have anything to
+       do with Flask. The code, I think, is fairly self-evident.
+
+    Q: Why is api.py so flagrantly misnamed?
+    A: It originally had more stuff in it. Then I took that stuff out. I never
+       renamed it. The actual API is in httpserver.py.
+
+    Q: How does it work?
+    A: Like this:
+          __________________             __________       _________________
+         /                  \           /          \     /                 \
+         |     DATABASE     |           | password |     | HTML and JS     | 
+         \_______________ __/           \________ _/     | files           | 
+                 ^       |               ^       |       \_________________/ 
+                 |     results           |     read                 |        
+            SQL queries  |             write     |         read on startup   
+  _______________|_______v_______________|_______v__________________v_______ 
+ /              |          |           |               |     |              \
+ | FLASK SERVER | Database |<------+   |  password.py  |  +--| In-memory    |
+ |              | interface|       |   \_______________/  |  | HTML Text    |
+ |              \__________/     add_rects  ^      ^      |  \______________|
+ |                  ^              |       check   |      |   ______________|
+ |                get_rts    ______|________|      |      |  /              |
+ |        __________|_____  /                \      \     +->| The static   |
+ |       /                \ | The Import     |      set      | part         |
+ |       | The api part   | | Tool           |        \      |              |
+ \_______|__ _____________|_|________________|_________\_____|______________/
+            |          ^               ^               ^           ^         
+           send       /requset         |               |           |         
+           data      / data            |               |           |         
+     _______v_______/_                 +----+          |         send        
+    /                 \                     |          |         HTML        
+    | sunlight.coffee |                     |          |         page        
+    \_______ _________/                     |          |           |         
+            |      ^            +-----------|----------|------+----+        
+         polygons  | viewport   |           |          |      |            
+     _______v______|_moves___   |           |          |      |          
+    /                        \  |           |          |      |       
+    |       LEAFLET          |  |         send       send     |       
+    \___ ____________________/  /         form       form     |       
+        ^      ^               /\         with         |      |              
+  +-----+    loads            /  \        shapefile    |      |              
+  |  __________|_____________v_   v_________|____    __|______v__
+  | /                          \ /               \  /            \
+  | |   BROWSER (/)            | |   (/import)   |  | (/setpass) |
+  | \__________________________/ \_______________/  \____________/
+  |                  ^                  ^                 ^      
+ map             ¦ pans and            add              change    
+ tiles---+       ¦  zooms            shapefile        password         
+   ______|_____  ¦  _|_______     ______|_________________|______
+  /            \ ¦ /         \   /                               \
+  |  MAPQUEST  | ¦ |   USER  |   |    GIS PEOPLE                 |
+  \____________/ ¦ \_________/   \_______________________________/
+
+    Q: What are all these things?
+    A: 
+
+~~ BROWSER (/)
+    Just a normal web browser.
+~~ /
+    The main page of the app. Currently a full-screen Leaflet map
+    (see LEAFLET). This is the only page normal users will see. They should be
+    able to click their house and see all the useful numbers (see DATABASE).
+
+~~ USER
+    Someone who owns a home or buisness or other edifice with one or more
+    large, skyward-facing planes, and would like to see all the data.
+
+~~ GIS PEOPLE
+    The robed wizards who cast spells on data and turn it into useful stuff,
+    which they then dump into the app (see /import). I don't really care about
+    how they do this. You probably shouldn't either.
+
+~~ MAPQUEST
+    A service which provides free satellite footage. Has decent zoom levels
+    in the US, which is really all we care about. Map tiles are requested by
+    Leaflet (see LEAFLET) as needed. There's a URL in sunlight.coffee pointing
+    to this service.
+
+~~ /import
+    A simple HTML form to allow shapefiles containing data (see DATABASE) to
+    be uploaded. Has a primitive form of password protection to keep out the
+    script kiddies (see password.py). There's also a checkbox labeled "Clear
+    Old Data," which deletes all preexisting rooftops. /import will
+    occasinally error, and when this happens, it will indicate this error in
+    the most hideous way posssible. In particular, take note of "Database
+    Error; see logs." This error almost never has anything to do with the
+    database.
+
+~~ /setpass
+    Whenever you have a password, you need a way to change it. Otherwise the
+    GIS PEOPLE would bother me every time the script kiddies figured out which
+    letter of "password" I replaced with a number. "Pas5word?" "Passw0rd?" Got
+    to keep 'em guessing. There's no forgot password mechanism, but that's OK
+    because there's a way to do it through ssh (see password.py). This page is
+    linked to from /import.
+
+~~ LEAFLET
+    A generic slippy map library. Can take map tiles from anything with a
+    remotely OpenStreetMap-like URL scheme. Has tons of useful widgets and
+    stuff. You can also hook into events that let you know when stuff goes
+    down. Uses EPSG 4326 for all interactions. Is initialized and otherwise
+    pandered to in sunlight.coffee.
+
+~~ sunlight.coffee
+    A Coffeescript file that contains all the client-side logic. Automatically
+    compiled for you if you start the server right (see Q: How do I start the
+    server?). Contains parts that turn the viewport into WKT for the api
+    requests, and parts that read GeoJson and draw polygons to the map. That's
+    all I can remember for the moment.
+
+~~ The api part
+    The system works by having a single page request rooftop data one batch
+    at a time. The api accepts a url containing a WKT string, then returns a
+    JSON array representing all the rooftops that intersect it. The array
+    contains geojson; the rest of the api is fairly obvious if you look at the
+    relevent part of httpserver.py (@app.route("/rooftops/...).
+
+I need a close paren. ")"
+  
+~~ The Import Tool
+    (see /import)
+    Every now and then, the GIS PEOPLE will need to perform their arcane craft
+    once more, and when they do, a mechanism must be in place to reap the
+    rewards to their labor. Plus, all this code needs to be written anyway,
+    so it might as well be tight with the rest of the app. This code uses
+    pyproj to convert the data to EPSG 4326, and pyshp to read the data in the
+    first place. The data itself is exactly one shapefile in a zip.
+    import_tool.py is responsible for converting stuff, and does so by
+    extracting the zip in a temporary directory, then reading its contents.
+    
+    *** WARNING WARNING WARNING ***
+        THIS IS THE MOST FRUSTRATING PART OF SUNLIGHT. THIS PART CAN ALWAYS
+        BE RELIED ON TO PUT THE ROOFTOPS SQUARE IN THE MIDDLE OF THE ATLATIC,
+        AND I HAVE NO IDEA WHY.
+        ENTER WITH CAUTION.
+    *** WARNING WARNING WARNING ***
+
+~~ The static part
+    Various static files must be served for sunlight to work. Rather than force
+    myself to use the restrictive and arbitrary directory structure that
+    Flask's static file thing would impose on the project, I have rolled my
+    own, highly clever system for serving these files. I suspect I may continue here.
+~~ Database interface
+~~ password.py
+~~ In-memory HTML Text
+~~ FLASK SERVER
+~~ DATABASE
+~~ password
+~~ HTML and JS files
