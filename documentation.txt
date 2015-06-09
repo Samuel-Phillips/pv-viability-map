@@ -155,14 +155,14 @@ I need a close paren. ")"
     extracting the zip in a temporary directory, then reading its contents.
     
     *** WARNING WARNING WARNING ***
-        THIS IS THE MOST FRUSTRATING PART OF SUNLIGHT. THIS PART CAN ALWAYS
+        THIS IS THE MOST FRUSTRATING PART OF PVMAP. THIS PART CAN ALWAYS
         BE RELIED ON TO PUT THE ROOFTOPS SQUARE IN THE MIDDLE OF THE ATLATIC,
         AND I HAVE NO IDEA WHY.
         ENTER WITH CAUTION.
     *** WARNING WARNING WARNING ***
 
 ~~ The static part
-    Various static files must be served for sunlight to work. Rather than force
+    Various static files must be served for PVMap to work. Rather than force
     myself to use the restrictive and arbitrary directory structure that
     Flask's static file thing would impose on the project, I have rolled my
     own, highly clever system for serving these files. They are read into
