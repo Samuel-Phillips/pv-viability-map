@@ -21,6 +21,6 @@ The blue regions should correspond with the rooftops; you can click the and see 
 
 It also has a form at /import to load shapefiles to the database, and a form at /setpass to change the password that protects the aforementioned /import form.
 
-A PostgreSQL database with PostGIS installed is required. You can get both with `apt-get install postgresql postgis`. After this, a database must be created for Sunlight to use. Run the init.sql file on the database, and change the contents of flaskconfig.py as needed.
+A PostgreSQL database with PostGIS installed is required. You can get both with `apt-get install postgresql postgis`. After this, a database must be created for Sunlight to use. Run the [init.sql](init.sql) file on the database, and change the contents of [flaskconfig.py](flaskconfig.py) as needed.
 
-For a full overview of the app's design, see documentation.txt.
+For a full overview of the app's design, see [documentation.txt](documentation.txt).
