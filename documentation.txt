@@ -307,6 +307,13 @@ A GIS PERSON IMPORTS A SHAPEFILE
     Projection applied. (import_tool.py:116)
     Rooftops added to database. (import_tool.py:93)
 
+    Q: Are there any temporary, short-term kludges in here I should know about?
+
+    A: Yes, over 600 lines of them.
+       More seriously, I've already mentioned -*-magictext-*-, and there's also
+       a hard-coded translate in the xfrm function of import_tool.py, which
+       you'll probably want to drop like a hot potato.
+
     Q: Ok, that's all great and helpful, but the thing is, no one asked any of
        these questions. No one even had the opportunity to do so! How can they
        be "Frequently Asked" if no one asked them!?
